@@ -2,9 +2,6 @@ import flatpickr from "flatpickr";
 import "flatpickr/dist/flatpickr.min.css";
 import Notiflix from 'notiflix';
 
-const currentData = new Date();
-let timeDifference = 0;
-
 const refs = {
     daysEl: document.querySelector('[data-days]'),
     hoursEl: document.querySelector('[data-hours]'),
@@ -14,10 +11,11 @@ const refs = {
     startBtn: document.querySelector('button[data-start]')
 }
 
+refs.startBtn.setAttribute('disabled', true);
 
-refs.startBtn.disabled = true;
+let timeDifference = 0;
+let selectedDateInput = 0;
 
-let inputTimeValue = 0;
 
 const options = {
     enableTime: true,
@@ -25,61 +23,49 @@ const options = {
     defaultDate: new Date(),
     minuteIncrement: 1,
     onClose(selectedDates) {
-      console.log(inputTimeValue = selectedDates[0].getTime());
-
-      if (inputTimeValue < currentData) {
+      selectedDateInput = selectedDates[0].getTime();
+  
+      if ((selectedDateInput < Date.now())){
         Notiflix.Notify.warning('Please choose a date in the future');
       } else{
-        refs.startBtn.disabled = false;
+        refs.startBtn.removeAttribute('disabled');
       }
     },
   };
 
   flatpickr(refs.datetime, options);
   
-  
-  const handelTime = () => {
-    const currentData = new Date();
-    const timeDifference = inputTimeValue - currentData;
-  
-
-    if (timeDifference >= 0) {
-      const { days, hours, minutes, seconds } = convertMs(`${timeDifference}`);
-      console.log(`${days}: ${hours}: ${minutes}: ${seconds}`);
-  
-      refs.daysEl.textContent = `${days}`;
-      refs.hoursEl.textContent = `${hours}`;
-      refs.minutesEl.textContent = `${minutes}`;
-      refs.secondsEl.textContent = `${seconds}`;
-    } else {
-      refs.daysEl.textContent = '00';
-      refs.hoursEl.textContent = '00';
-      refs.minutesEl.textContent = '00';
-      refs.secondsEl.textContent = '00';
-    }
-    
-  }
-
   refs.startBtn.addEventListener('click', onClikTamerStart);
-function onClikTamerStart () {  
-    const timer = setInterval(handelTime, 1000);
+  function onClikTamerStart () {  
+      const timer = setInterval(handelTime, 1000);
+  }
+  function handelTime() {
+    timeDifference = selectedDateInput - Date.now();
+    timeText();
+  }
+  
+  function timeText () {
+  const { days, hours, minutes, seconds } = convertMs(`${timeDifference}`);
+  console.log(`${days}:${hours}:${minutes}:${seconds}`);
+  refs.daysEl.textContent = `${days}`;
+  refs.hoursEl.textContent = `${hours}`;
+  refs.minutesEl.textContent = `${minutes}`;
+  refs.secondsEl.textContent = `${seconds}`;
 }
 
-
 function convertMs(ms) {
-    // Number of milliseconds per unit of time
     const second = 1000;
     const minute = second * 60;
     const hour = minute * 60;
     const day = hour * 24;
   
-    // Remaining days
+
     const days = addLeadingZero(Math.floor(ms / day));
-    // Remaining hours
+
     const hours = addLeadingZero(Math.floor((ms % day) / hour));
-    // Remaining minutes
+
     const minutes = addLeadingZero(Math.floor(((ms % day) % hour) / minute));
-    // Remaining seconds
+
     const seconds = addLeadingZero(Math.floor((((ms % day) % hour) % minute) / second));
   
     return { days, hours, minutes, seconds };
@@ -89,9 +75,4 @@ function convertMs(ms) {
     return value.toString().padStart(2, '0');
   };
   
-  
-  // console.log(convertMs(2000)); // {days: 0, hours: 0, minutes: 0, seconds: 2}
-  // console.log(convertMs(140000)); // {days: 0, hours: 0, minutes: 2, seconds: 20}
-  // console.log(convertMs(24140000)); // {days: 0, hours: 6 minutes: 42, seconds: 20}
-
-
+ 
